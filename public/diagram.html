@@ -126,9 +126,9 @@
     });
 
     body.extras.services.forEach(function(service) {
-      if (!~newNodeIds.indexOf(service.instanceId)) return;
+      if (!~newNodeIds.indexOf(service.name)) return;
       nodes.update({
-        id: service.instanceId,
+        id: service.name,
         label: service.name,
         color: '#c2f4ad'
       });
