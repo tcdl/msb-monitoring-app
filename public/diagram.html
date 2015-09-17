@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+  <title>Monitor</title>
+
+  <script type="text/javascript">module = {}</script>
+  <script type="text/javascript" src="http://visjs.org/dist/vis.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/iriscouch/browser-request/master/index.js"></script>
+
+  <style type="text/css">
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #mynetwork {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="mynetwork"></div>
+
+<script type="text/javascript">
+  (function(){
+
+  // create an array with nodes
+  var nodes = new vis.DataSet();
+
+  // create an array with edges
+  var edges = new vis.DataSet();
+
+  // create a network
+  var container = document.getElementById('mynetwork');
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+  var options = {
+    autoResize: true,
+    nodes: {
+      shape: 'box',
+      size: 10,
+      shadow: true,
+      mass: 3.5
+    },
+    edges: {
+      smooth: false
+    },
+    physics: {
+      // forceAtlas2Based: {
+      //   gravitationalConstant: -26,
+      //   centralGravity: 0.005,
+      //   springLength: 230,
+      //   springConstant: 0.18
+      // },
+      // maxVelocity: 146,
+      // solver: 'forceAtlas2Based',
+      // timestep: 0.35,
+      // stabilization: {
+      //   iterations:300
+      // }
+    }
+  };
+  var network = new vis.Network(container, data, options);
+
+  var interval = setInterval(function() {
+
+    request({
+      url: './status',
+      json: true
+    }, function(err, res, body) {
+      if (err) return console.log(err);
+
+      updateNetwork(body);
+    });
+
+  }, 1000);
+
+  var nodeIds = [];
+  var edgeIds = [];
+
+  function updateNetwork(body) {
+    var newNodeIds = [];
+    var newEdgeIds = [];
+
+    body.docs.forEach(function(doc) {
+      var topic = labelForTopic(doc.namespace);
+
+      nodes.update({
+        id: topic,
+        label: topic,
+        shape: 'dot',
+        color: '#ffff9f'
+      });
+
+      doc.consumers.forEach(function(id) {
+        var edgeId = topic + '/' + id;
+        edges.update({
+          id: edgeId,
+          from: topic,
+          to: id,
+          arrows: 'to'
+        });
+
+        newNodeIds.push(id);
+        newEdgeIds.push(edgeId);
+      });
+
+      doc.producers.forEach(function(id) {
+        var edgeId = id + '/' + topic;
+        edges.update({
+          id: edgeId,
+          from: id,
+          to: topic,
+          arrows: 'to'
+        });
+
+        newNodeIds.push(id);
+        newEdgeIds.push(edgeId);
+      });
+
+      newNodeIds.push(topic);
+    });
+
+    body.extras.services.forEach(function(service) {
+      if (!~newNodeIds.indexOf(service.instanceId)) return;
+      nodes.update({
+        id: service.instanceId,
+        label: service.name,
+        color: '#c2f4ad'
+      });
+    });
+
+    nodeIds.forEach(function(id) {
+      if (~newNodeIds.indexOf(id)) return;
+      nodes.remove(id);
+    });
+
+    edgeIds.forEach(function(id) {
+      if (~newEdgeIds.indexOf(id)) return;
+      edges.remove(id);
+    });
+
+    nodeIds = newNodeIds;
+    edgeIds = newEdgeIds;
+  }
+
+  function labelForTopic(topic) {
+    return topic.replace(/:response:[0-9a-f]+$/, ':response');
+  }
+
+  })();
+</script>
+
+</body>
+</html>
