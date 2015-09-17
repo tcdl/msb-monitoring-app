@@ -24,7 +24,7 @@ app.start = function(cb) {
       path: '/_app'
     }
   });
-  console.log(config)
+
   routes.load(config);
 
   statusHandler.listen();
