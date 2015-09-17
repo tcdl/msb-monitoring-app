@@ -1,6 +1,6 @@
 {
   "name": "msb-monitoring-app",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An MSB app that monitors channels and exposes endpoints along with a basic monitoring UI.",
   "main": "app.js",
   "scripts": {
