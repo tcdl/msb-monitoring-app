@@ -4,7 +4,7 @@
   <title>Monitor</title>
 
   <script type="text/javascript">module = {}</script>
-  <script type="text/javascript" src="http://visjs.org/dist/vis.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.2/vis.min.js"></script>
   <script type="text/javascript" src="https://rawgit.com/iriscouch/browser-request/master/index.js"></script>
 
   <style type="text/css">
@@ -85,6 +85,11 @@
   function updateNetwork(body) {
     var newNodeIds = [];
     var newEdgeIds = [];
+    var serviceNamesById = {};
+
+    body.extras.services.forEach(function(service) {
+      serviceNamesById[service.instanceId] = service.name;
+    });
 
     body.docs.forEach(function(doc) {
       var topic = labelForTopic(doc.namespace);
@@ -97,28 +102,28 @@
       });
 
       doc.consumers.forEach(function(id) {
-        var edgeId = topic + '/' + id;
+        var edgeId = topic + '/' + serviceNamesById[id];
         edges.update({
           id: edgeId,
           from: topic,
-          to: id,
+          to: serviceNamesById[id],
           arrows: 'to'
         });
 
-        newNodeIds.push(id);
+        newNodeIds.push(serviceNamesById[id]);
         newEdgeIds.push(edgeId);
       });
 
       doc.producers.forEach(function(id) {
-        var edgeId = id + '/' + topic;
+        var edgeId = serviceNamesById[id] + '/' + topic;
         edges.update({
           id: edgeId,
-          from: id,
+          from: serviceNamesById[id],
           to: topic,
           arrows: 'to'
         });
 
-        newNodeIds.push(id);
+        newNodeIds.push(serviceNamesById[id]);
         newEdgeIds.push(edgeId);
       });
 
