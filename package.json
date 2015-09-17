@@ -1,0 +1,32 @@
+{
+  "name": "msb-monitoring-app",
+  "version": "0.1.0",
+  "description": "An MSB app that monitors channels and exposes endpoints along with a basic monitoring UI.",
+  "main": "app.js",
+  "scripts": {
+    "npmrc": "printf \"_auth = $NPM_AUTH_TOKEN\nemail = $NPM_EMAIL\n\" > .npmrc",
+    "test": "npm run test-no-publish && if [ -n \"${TRAVIS_TAG}\" ]; then npm run npmrc && npm publish; fi",
+    "test-no-publish": "",
+    "watch": "nodemon app",
+    "demo": "http2bus http2bus.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tcdl/msb-monitoring-app.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tcdl/msb-monitoring-app/issues"
+  },
+  "homepage": "https://github.com/tcdl/msb-monitoring-app",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "mime-types": "^2.1.6",
+    "msb": "^0.8.2",
+    "msb-http2bus": "^0.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.5.1"
+  }
+}
